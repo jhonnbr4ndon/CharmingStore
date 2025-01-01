@@ -23,10 +23,19 @@ public class UserService implements UserDetailsService {
     }
 
     public User saveUser(User user, User.RoleName role) {
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("O username já está em uso.");
+        }
+
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("O email já está em uso.");
+        }
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(role); // Define o papel (USER ou ADMIN)
         return userRepository.save(user);
     }
+
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

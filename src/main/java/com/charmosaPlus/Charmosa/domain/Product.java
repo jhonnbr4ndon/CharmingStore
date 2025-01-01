@@ -5,23 +5,35 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "products")
-
 public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String name;
     private String description;
     private Double price;
-    private String color;
-    private String size;
+
+    @ElementCollection
+    @CollectionTable(name = "product_colors", joinColumns = @JoinColumn(name = "product_id"))
+    @Column(name = "color")
+    private List<String> colors;
+
+    @ElementCollection
+    @CollectionTable(name = "product_sizes", joinColumns = @JoinColumn(name = "product_id"))
+    @Column(name = "size")
+    private List<String> sizes;
+
+    @Lob
+    @Column(name = "image", columnDefinition = "BLOB")
+    private byte[] image;
 
     public Long getId() {
         return id;
@@ -55,19 +67,27 @@ public class Product {
         this.price = price;
     }
 
-    public String getColor() {
-        return color;
+    public List<String> getColors() {
+        return colors;
     }
 
-    public void setColor(String color) {
-        this.color = color;
+    public void setColors(List<String> colors) {
+        this.colors = colors;
     }
 
-    public String getSize() {
-        return size;
+    public List<String> getSizes() {
+        return sizes;
     }
 
-    public void setSize(String size) {
-        this.size = size;
+    public void setSizes(List<String> sizes) {
+        this.sizes = sizes;
+    }
+
+    public byte[] getImage() {
+        return image;
+    }
+
+    public void setImage(byte[] image) {
+        this.image = image;
     }
 }

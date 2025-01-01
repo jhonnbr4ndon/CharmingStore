@@ -32,11 +32,11 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf().disable()
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/h2-console/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/products/**").hasAnyRole("USER", "ADMIN") // GET permitido para USER e ADMIN
-                        .requestMatchers(HttpMethod.POST, "/api/products/**").hasRole("ADMIN") // POST permitido apenas para ADMIN
-                        .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN") // PUT permitido apenas para ADMIN
-                        .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN") // DELETE permitido apenas para ADMIN
+                        .requestMatchers("/auth/**", "/h2-console/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/products/**").hasAnyRole("USER", "ADMIN") // GET permitido para USER e ADMIN
+                        .requestMatchers(HttpMethod.POST, "/products/**").hasRole("ADMIN") // POST permitido apenas para ADMIN
+                        .requestMatchers(HttpMethod.PUT, "/products/**").hasRole("ADMIN") // PUT permitido apenas para ADMIN
+                        .requestMatchers(HttpMethod.DELETE, "/products/**").hasRole("ADMIN") // DELETE permitido apenas para ADMIN
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

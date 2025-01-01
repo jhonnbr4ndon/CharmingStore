@@ -11,7 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -25,15 +25,23 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody User user) {
-        userService.saveUser(user, User.RoleName.ROLE_USER); // Role padrão
-        return ResponseEntity.ok("Usuário registrado com sucesso!");
+    public ResponseEntity<?> register(@RequestBody User user) {
+        try {
+            userService.saveUser(user, User.RoleName.ROLE_USER); // Role padrão
+            return ResponseEntity.ok("Usuário registrado com sucesso!");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PostMapping("/register/admin")
-    public ResponseEntity<String> registerAdmin(@RequestBody User user) {
-        userService.saveUser(user, User.RoleName.ROLE_ADMIN); // Role de admin
-        return ResponseEntity.ok("Administrador registrado com sucesso!");
+    public ResponseEntity<?> registerAdmin(@RequestBody User user) {
+        try {
+            userService.saveUser(user, User.RoleName.ROLE_ADMIN); // Role de admin
+            return ResponseEntity.ok("Administrador registrado com sucesso!");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PostMapping("/login")
