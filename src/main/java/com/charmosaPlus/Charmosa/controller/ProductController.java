@@ -59,7 +59,8 @@ public class ProductController {
             @RequestParam("price") Double price,
             @RequestParam(value = "colors", required = false) List<String> colors,
             @RequestParam(value = "sizes", required = false) List<String> sizes,
-            @RequestPart("images") List<MultipartFile> images) {
+            @RequestPart(value = "images", required = false) List<MultipartFile> images) { //O Spring Boot pode não interpretar corretamente List<MultipartFile> em @RequestPart, especialmente em requisições multipart.
+            //@RequestPart("images") List<MultipartFile> images) {
         try {
             Product product = new Product();
             product.setName(name);
@@ -106,13 +107,14 @@ public class ProductController {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
-        if (productService.findById(id).isPresent()) {
-            productService.deleteById(id);
-            return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Object> deleteProduct(@PathVariable Long id) {
+        return productService.findById(id)
+                .map(product -> {
+                    productService.deleteImagesByProductId(id); // Método apagar imagem, função criada em ProductService.java
+                    productService.deleteById(id);
+                    return ResponseEntity.noContent().build();
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
     private ProductDTO convertToResponseDTO(Product product) {

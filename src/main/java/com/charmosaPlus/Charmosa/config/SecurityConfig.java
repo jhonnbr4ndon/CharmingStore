@@ -12,6 +12,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
 
 @Configuration
 public class SecurityConfig {
@@ -31,21 +35,51 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf().disable()
+                .cors().configurationSource(corsConfigurationSource()).and()
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**", "/h2-console/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/products/**").hasAnyRole("USER", "ADMIN") // GET permitido para USER e ADMIN
+                        .requestMatchers("/login", "/register", "/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/","/web/products/**").hasRole("ADMIN") // Apenas ADMIN pode acessar criar produtos
+                        .requestMatchers(HttpMethod.GET, "/products/**").permitAll()
+                        //.requestMatchers(HttpMethod.GET, "/products/**").hasRole("ADMIN") // Apenas ADMIN pode acessar produtos
+                        .requestMatchers(HttpMethod.GET, "/products/{id}").permitAll() // Permitir que qualquer usuário veja um produto específico
+                        .requestMatchers("/web/products/**").hasRole("ADMIN")  // Apenas ADMIN pode acessar a página de gerenciamento
                         .requestMatchers(HttpMethod.POST, "/products/**").hasRole("ADMIN") // POST permitido apenas para ADMIN
                         .requestMatchers(HttpMethod.PUT, "/products/**").hasRole("ADMIN") // PUT permitido apenas para ADMIN
                         .requestMatchers(HttpMethod.DELETE, "/products/**").hasRole("ADMIN") // DELETE permitido apenas para ADMIN
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .formLogin(form -> form
+                        .loginPage("/login") // Página customizada de login
+                        .defaultSuccessUrl("/", true) // Redireciona após login bem-sucedido
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login")
+                        .permitAll()
+                )
+                // Removido ou alterado para manter o estado da sessão
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .headers(headers -> headers.frameOptions().disable());
 
         // Adiciona o filtro JWT antes do UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public UrlBasedCorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200")); // URL do Angular
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Accept"));
+        configuration.setAllowCredentials(true); // Permitir envio de cookies/autenticação
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     @Bean

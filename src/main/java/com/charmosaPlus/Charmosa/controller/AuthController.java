@@ -10,6 +10,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
@@ -28,9 +32,11 @@ public class AuthController {
     public ResponseEntity<?> register(@RequestBody User user) {
         try {
             userService.saveUser(user, User.RoleName.ROLE_USER); // Role padrão
-            return ResponseEntity.ok("Usuário registrado com sucesso!");
+            // Retorna a mensagem no formato JSON
+            return ResponseEntity.ok(Collections.singletonMap("message", "Usuário registrado com sucesso!"));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            // Retorna o erro no formato JSON também
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
         }
     }
 
@@ -45,17 +51,30 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody User user) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
-        );
+    public ResponseEntity<?> login(@RequestBody User user) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
+            );
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String role = authentication.getAuthorities().iterator().next().getAuthority(); // Obtem o role do usuário
-        String token = jwtUtil.generateToken(authentication.getName(), role);
+            String role = authentication.getAuthorities().iterator().next().getAuthority(); // Obtém o role do usuário
 
-        return ResponseEntity.ok(token);
+            // Remove o prefixo "ROLE_" do papel
+            role = role.replace("ROLE_", "");
+
+            String token = jwtUtil.generateToken(authentication.getName(), role);
+
+            // Retorna o token e o papel simplificado
+            Map<String, Object> response = new HashMap<>();
+            response.put("token", token);
+            response.put("role", role); // Exemplo: retorna "USER" ou "ADMIN"
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Credenciais inválidas!"));
+        }
     }
 }
 
