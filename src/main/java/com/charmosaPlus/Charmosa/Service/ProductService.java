@@ -6,6 +6,8 @@ import com.charmosaPlus.Charmosa.domain.Product;
 import com.charmosaPlus.Charmosa.domain.ProductImage;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
 import java.util.List;
@@ -78,5 +80,9 @@ public class ProductService {
 
     public void deleteById(Long id) {
         productRepository.deleteById(id);
+    }
+
+    public Page<Product> findAllPaginated(Pageable pageable) {
+        return productRepository.findAll(pageable);
     }
 }

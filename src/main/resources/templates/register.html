@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastro</title>
+    <link href="/webjars/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Inclua o CSS fornecido no template */
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            color: #666666;
+            background: #eaeff4;
+        }
+
+        .wrapper {
+            margin: 0 auto;
+            width: 100%;
+            max-width: 1140px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            display: flex;
+            background: #ffffff;
+            box-shadow: 0 0 15px rgba(0, 0, 0, .1);
+        }
+
+        .col-left {
+            width: 45%;
+            background: #4CAF50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            color: #ffffff;
+            -webkit-clip-path: polygon(98% 17%, 100% 34%, 98% 51%, 100% 68%, 98% 84%, 100% 100%, 0 100%, 0 0, 100% 0);
+            clip-path: polygon(98% 17%, 100% 34%, 98% 51%, 100% 68%, 98% 84%, 100% 100%, 0 100%, 0 0, 100% 0);
+        }
+
+        .col-right {
+            width: 55%;
+            padding: 45px 35px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 7px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            color: #ffffff;
+            background: #4CAF50;
+            border: none;
+            transition: 0.3s ease-in-out;
+        }
+
+        .btn:hover {
+            color: #4CAF50;
+            background: #ffffff;
+            border: 1px solid #4CAF50;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        p {
+            margin: 0 0 15px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        input:focus {
+            border-color: #4CAF50;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .col-left,
+            .col-right {
+                width: 100%;
+                clip-path: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="container">
+        <div class="col-left">
+            <div class="login-text">
+                <h2>Bem-vindo!</h2>
+                <p>Já possui uma conta? Faça login para acessar o sistema.</p>
+                <a class="btn" href="/login">Login</a>
+            </div>
+        </div>
+        <div class="col-right">
+            <div class="login-form">
+                <h2>Cadastro</h2>
+                <form th:action="@{/register}" th:object="${user}" method="post">
+                    <p>
+                        <input type="text" th:field="*{username}" placeholder="Usuário" required>
+                    </p>
+                    <p>
+                        <input type="email" th:field="*{email}" placeholder="Email" required>
+                    </p>
+                    <p>
+                        <input type="password" th:field="*{password}" placeholder="Senha" required>
+                    </p>
+                    <p>
+                        <input class="btn" type="submit" value="Cadastrar">
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
