@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
 @AllArgsConstructor
+@Data
 @NoArgsConstructor
 @Table(name = "products")
 public class Product {
@@ -21,6 +21,7 @@ public class Product {
     private String name;
     private String description;
     private Double price;
+    private Integer quantity;
 
     @ElementCollection
     @CollectionTable(name = "product_colors", joinColumns = @JoinColumn(name = "product_id"))
@@ -35,59 +36,4 @@ public class Product {
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductImage> images = new ArrayList<>();
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Double getPrice() {
-        return price;
-    }
-
-    public void setPrice(Double price) {
-        this.price = price;
-    }
-
-    public List<String> getColors() {
-        return colors;
-    }
-
-    public void setColors(List<String> colors) {
-        this.colors = colors;
-    }
-
-    public List<String> getSizes() {
-        return sizes;
-    }
-
-    public void setSizes(List<String> sizes) {
-        this.sizes = sizes;
-    }
-
-    public List<ProductImage> getImages() {
-        return images;
-    }
-
-    public void setImages(List<ProductImage> images) {
-        this.images = images;
-    }
 }

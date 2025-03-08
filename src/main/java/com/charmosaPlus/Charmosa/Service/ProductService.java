@@ -41,6 +41,13 @@ public class ProductService {
                         .findFirst());
     }
 
+    public List<ProductImage> findAllImagesByProductId(Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+
+        return product.getImages();
+    }
+
     public Product saveWithImages(Product product, List<MultipartFile> images) {
         List<ProductImage> productImages = images.stream().map(image -> {
             try {
@@ -59,6 +66,45 @@ public class ProductService {
 
     public Product saveWithoutImages(Product product) {
         return productRepository.save(product);
+    }
+
+    // Atualizar uma imagem específica ou todas, dependendo do parâmetro
+    public void updateProductImages(Long productId, Long imageId, List<MultipartFile> newImages) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+
+        if (imageId != null) {
+            // Atualiza apenas UMA imagem específica
+            ProductImage productImage = product.getImages().stream()
+                    .filter(img -> img.getId().equals(imageId))
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Imagem não encontrada"));
+
+            try {
+                productImage.setImage(newImages.get(0).getBytes()); // Apenas a primeira imagem
+                productImageRepository.save(productImage);
+            } catch (IOException e) {
+                throw new RuntimeException("Erro ao processar a imagem", e);
+            }
+        } else {
+            // Substitui TODAS as imagens do produto
+            productImageRepository.deleteAll(product.getImages());
+            product.getImages().clear();
+
+            List<ProductImage> updatedImages = newImages.stream().map(image -> {
+                try {
+                    ProductImage productImage = new ProductImage();
+                    productImage.setImage(image.getBytes());
+                    productImage.setProduct(product);
+                    return productImage;
+                } catch (IOException e) {
+                    throw new RuntimeException("Erro ao processar imagem", e);
+                }
+            }).collect(Collectors.toList());
+
+            product.getImages().addAll(updatedImages);
+            productRepository.save(product);
+        }
     }
 
     public void updateImages(Product product, List<MultipartFile> newImages) {

@@ -2,6 +2,7 @@ package com.charmosaPlus.Charmosa.controller;
 
 import com.charmosaPlus.Charmosa.Service.ProductService;
 import com.charmosaPlus.Charmosa.domain.Product;
+import com.charmosaPlus.Charmosa.domain.ProductImage;
 import com.charmosaPlus.Charmosa.domain.dto.ProductDTO;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -40,15 +41,33 @@ public class ProductController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/{productId}/images/{imageId}")
-    public ResponseEntity<byte[]> getProductImage(
+    @GetMapping("/{productId}/images")
+    public ResponseEntity<?> getProductImages(
             @PathVariable Long productId,
-            @PathVariable Long imageId) {
-        return productService.findImageById(productId, imageId)
-                .map(image -> ResponseEntity.ok()
-                        .header(HttpHeaders.CONTENT_TYPE, detectImageType(image.getImage()))
-                        .body(image.getImage()))
-                .orElse(ResponseEntity.notFound().build());
+            @RequestParam(required = false) Long imageId) {
+
+        if (imageId != null) {
+            // Se imageId foi informado, retorna apenas a imagem específica
+            return productService.findImageById(productId, imageId)
+                    .map(image -> ResponseEntity.ok()
+                            .header(HttpHeaders.CONTENT_TYPE, detectImageType(image.getImage()))
+                            .body(image.getImage()))
+                    .orElse(ResponseEntity.notFound().build());
+        } else {
+            // Se imageId não foi informado, retorna todas as imagens do produto
+            List<ProductImage> images = productService.findAllImagesByProductId(productId);
+
+            if (images.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Criando URLs para acessar cada imagem
+            List<String> imageUrls = images.stream()
+                    .map(image -> "/products/" + productId + "/images/" + image.getId())
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(imageUrls);
+        }
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -57,6 +76,7 @@ public class ProductController {
             @RequestParam("name") String name,
             @RequestParam("description") String description,
             @RequestParam("price") Double price,
+            @RequestParam("quantity") Integer quantity,
             @RequestParam(value = "colors", required = false) List<String> colors,
             @RequestParam(value = "sizes", required = false) List<String> sizes,
             @RequestPart("images") List<MultipartFile> images) {
@@ -65,6 +85,7 @@ public class ProductController {
             product.setName(name);
             product.setDescription(description);
             product.setPrice(price);
+            product.setQuantity(quantity);
             product.setColors(colors);
             product.setSizes(sizes);
 
@@ -82,6 +103,7 @@ public class ProductController {
             @RequestParam("name") String name,
             @RequestParam("description") String description,
             @RequestParam("price") Double price,
+            @RequestParam("quantity") Integer quantity,
             @RequestParam(value = "colors", required = false) List<String> colors,
             @RequestParam(value = "sizes", required = false) List<String> sizes,
             @RequestPart(value = "images", required = false) List<MultipartFile> images) {
@@ -90,6 +112,7 @@ public class ProductController {
                     product.setName(name);
                     product.setDescription(description);
                     product.setPrice(price);
+                    product.setQuantity(quantity);
                     product.setColors(colors);
                     product.setSizes(sizes);
 
@@ -102,6 +125,35 @@ public class ProductController {
                     return ResponseEntity.ok(convertToResponseDTO(updatedProduct));
                 })
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PutMapping("/{productId}/images")
+    public ResponseEntity<String> updateProductImages(
+            @PathVariable Long productId,
+            @RequestPart("images") List<MultipartFile> images) {
+
+        try {
+            productService.updateProductImages(productId, null, images);
+            return ResponseEntity.ok("Todas as imagens foram atualizadas!");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PutMapping("/{productId}/images/{imageId}")
+    public ResponseEntity<String> updateSingleProductImage(
+            @PathVariable Long productId,
+            @PathVariable Long imageId,
+            @RequestPart("images") MultipartFile image) {
+
+        try {
+            productService.updateProductImages(productId, imageId, List.of(image));
+            return ResponseEntity.ok("Imagem atualizada com sucesso!");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -121,6 +173,7 @@ public class ProductController {
         dto.setName(product.getName());
         dto.setDescription(product.getDescription());
         dto.setPrice(product.getPrice());
+        dto.setQuantity(product.getQuantity());
         dto.setColors(product.getColors());
         dto.setSizes(product.getSizes());
 
