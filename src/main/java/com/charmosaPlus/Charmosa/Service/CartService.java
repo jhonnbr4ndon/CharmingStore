@@ -13,6 +13,7 @@ import com.charmosaPlus.Charmosa.domain.dto.CartItemDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -42,6 +43,12 @@ public class CartService {
         }
 
         Coupon coupon = optionalCoupon.get();
+
+        // Verifica se o cupom está expirado
+        if (coupon.getExpirationDate() != null && coupon.getExpirationDate().isBefore(LocalDate.now())) {
+            throw new RuntimeException("Este cupom já expirou!");
+        }
+
         double totalDiscount = 0.0;
 
         for (CartItem item : cart.getItems()) {

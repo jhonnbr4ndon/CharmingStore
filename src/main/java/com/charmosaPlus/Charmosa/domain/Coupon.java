@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Entity
 @Data
 @AllArgsConstructor
@@ -24,4 +26,6 @@ public class Coupon {
     @JoinColumn(name = "product_id", nullable = true) // Pode ser nulo para cupons gerais
     @JsonIgnoreProperties({"images", "sizes", "colors", "quantity", "description"}) // Ignorar serialização
     private Product product;
+
+    private LocalDate expirationDate; // Data de expiração do cupom
 }
