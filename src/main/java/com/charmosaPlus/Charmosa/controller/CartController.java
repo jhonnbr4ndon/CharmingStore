@@ -7,6 +7,7 @@ import com.charmosaPlus.Charmosa.domain.dto.CartDTO;
 import com.charmosaPlus.Charmosa.domain.dto.CartItemDTO;
 import com.charmosaPlus.Charmosa.domain.dto.CouponDTO;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -58,11 +59,13 @@ public class CartController {
     }
 
     // Criar um cupom
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @PostMapping("/coupon")
     public ResponseEntity<CouponDTO> createCoupon(@RequestBody CouponDTO couponDTO) {
         return ResponseEntity.ok(couponService.createCoupon(couponDTO));
     }
 
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @DeleteMapping("/coupon/{couponId}")
     public ResponseEntity<Void> deleteCoupon(@PathVariable Long couponId) {
         couponService.deleteCoupon(couponId);

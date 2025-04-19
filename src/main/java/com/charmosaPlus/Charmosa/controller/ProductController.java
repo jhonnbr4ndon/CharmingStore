@@ -88,8 +88,8 @@ public class ProductController {
             product.setDescription(description);
             product.setPrice(price);
             product.setQuantity(quantity);
-            product.setColors(colors);
-            product.setSizes(sizes);
+            product.setColors(cleanList(colors));
+            product.setSizes(cleanList(sizes));
 
             Product savedProduct = productService.saveWithImages(product, images);
             return ResponseEntity.ok(convertToResponseDTO(savedProduct));
@@ -201,5 +201,14 @@ public class ProductController {
             };
         }
         return "application/octet-stream";
+    }
+
+    private List<String> cleanList(List<String> input) {
+        if (input == null) return null;
+
+        return input.stream()
+                .map(String::trim)
+                .filter(value -> value != null && !value.isBlank())
+                .collect(Collectors.toList());
     }
 }
