@@ -5,6 +5,7 @@ import com.charmosaPlus.Charmosa.Repository.ProductRepository;
 import com.charmosaPlus.Charmosa.domain.Coupon;
 import com.charmosaPlus.Charmosa.domain.Product;
 import com.charmosaPlus.Charmosa.domain.dto.CouponDTO;
+import com.charmosaPlus.Charmosa.domain.enums.DiscountType;
 import com.charmosaPlus.Charmosa.domain.exception.CouponException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -12,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,7 +33,6 @@ public class CouponService {
                 .collect(Collectors.toList());
     }
 
-    // Criar um novo cupom
     public CouponDTO createCoupon(CouponDTO couponDTO) {
         // 🔍 Verifica se já existe um cupom com o mesmo código
         if (couponRepository.existsByCode(couponDTO.getCode())) {
@@ -42,8 +41,15 @@ public class CouponService {
 
         Coupon coupon = new Coupon();
         coupon.setCode(couponDTO.getCode());
-        coupon.setDiscountPercentage(couponDTO.getDiscountPercentage());
-        coupon.setExpirationDate(couponDTO.getExpirationDate()); // Definindo data de expiração
+        coupon.setDescription(couponDTO.getDescription());
+        coupon.setDiscountType(DiscountType.valueOf(couponDTO.getDiscountType()));
+        coupon.setDiscountValue(couponDTO.getDiscountValue());
+        coupon.setMinimumAmountToApply(couponDTO.getMinimumAmountToApply());
+        coupon.setIndividualUseOnly(couponDTO.getIndividualUseOnly());
+        coupon.setFreeShipping(couponDTO.getFreeShipping());
+        coupon.setMaxUses(couponDTO.getMaxUses());
+        coupon.setTimesUsed(0);
+        coupon.setExpirationDate(couponDTO.getExpirationDate());
 
         if (couponDTO.getProductId() != null) {
             Product product = productRepository.findById(couponDTO.getProductId())
@@ -72,7 +78,14 @@ public class CouponService {
         CouponDTO dto = new CouponDTO();
         dto.setId(coupon.getId());
         dto.setCode(coupon.getCode());
-        dto.setDiscountPercentage(coupon.getDiscountPercentage());
+        dto.setDescription(coupon.getDescription());
+        dto.setDiscountType(coupon.getDiscountType().name());
+        dto.setDiscountValue(coupon.getDiscountValue());
+        dto.setMinimumAmountToApply(coupon.getMinimumAmountToApply());
+        dto.setIndividualUseOnly(coupon.getIndividualUseOnly());
+        dto.setFreeShipping(coupon.getFreeShipping());
+        dto.setMaxUses(coupon.getMaxUses());
+        dto.setTimesUsed(coupon.getTimesUsed());
         dto.setProductId(coupon.getProduct() != null ? coupon.getProduct().getId() : null);
         dto.setExpirationDate(coupon.getExpirationDate());
         return dto;

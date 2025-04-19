@@ -62,11 +62,13 @@ public class ProductController {
             }
 
             // Criando URLs para acessar cada imagem
-            List<String> imageUrls = images.stream()
-                    .map(image -> "/products/" + productId + "/images/" + image.getId())
+            List<byte[]> imageBytesList = images.stream()
+                    .map(ProductImage::getImage)
                     .collect(Collectors.toList());
 
-            return ResponseEntity.ok(imageUrls);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_TYPE, "application/json")
+                    .body(imageBytesList);
         }
     }
 

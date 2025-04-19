@@ -8,7 +8,14 @@ import java.time.LocalDate;
 public class CouponDTO {
     private Long id;
     private String code;
-    private Double discountPercentage;
+    private String description;
+    private String discountType;
+    private Double discountValue;
+    private Double minimumAmountToApply;
+    private Boolean individualUseOnly;
+    private Boolean freeShipping;
+    private Integer maxUses;
+    private Integer timesUsed;
     private Long productId;
-    private LocalDate expirationDate; // Data de expiração
+    private LocalDate expirationDate;
 }
