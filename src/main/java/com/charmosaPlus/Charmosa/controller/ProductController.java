@@ -6,6 +6,7 @@ import com.charmosaPlus.Charmosa.domain.ProductImage;
 import com.charmosaPlus.Charmosa.domain.dto.ProductDTO;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -70,6 +71,20 @@ public class ProductController {
                     .header(HttpHeaders.CONTENT_TYPE, "application/json")
                     .body(imageBytesList);
         }
+    }
+
+    @GetMapping("/{productId}/images/{imageId}")
+    public ResponseEntity<byte[]> getProductImageById(
+            @PathVariable Long productId,
+            @PathVariable Long imageId) {
+
+        return productService.findImageById(productId, imageId)
+                .map(image -> {
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.setContentType(MediaType.IMAGE_JPEG);
+                    return new ResponseEntity<>(image.getImage(), headers, HttpStatus.OK);
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")

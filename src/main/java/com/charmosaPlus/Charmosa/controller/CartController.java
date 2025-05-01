@@ -6,6 +6,7 @@ import com.charmosaPlus.Charmosa.domain.Coupon;
 import com.charmosaPlus.Charmosa.domain.dto.CartDTO;
 import com.charmosaPlus.Charmosa.domain.dto.CartItemDTO;
 import com.charmosaPlus.Charmosa.domain.dto.CouponDTO;
+import com.charmosaPlus.Charmosa.domain.dto.UpdateQuantityDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -70,5 +71,10 @@ public class CartController {
     public ResponseEntity<Void> deleteCoupon(@PathVariable Long couponId) {
         couponService.deleteCoupon(couponId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/update-quantity")
+    public ResponseEntity<CartDTO> updateItemQuantity(@RequestBody UpdateQuantityDTO updateQuantityDTO) {
+        return ResponseEntity.ok(cartService.updateItemQuantity(updateQuantityDTO.getItemId(), updateQuantityDTO.getQuantity()));
     }
 }

@@ -163,6 +163,45 @@ public class CartService {
         return convertToCartDTO(cart);
     }
 
+    @Transactional
+    public CartDTO updateItemQuantity(Long itemId, int newQuantity) {
+        Cart cart = getOrCreateCart();
+
+        CartItem item = cart.getItems().stream()
+                .filter(i -> i.getId().equals(itemId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Item não encontrado no carrinho"));
+
+        Product product = item.getProduct();
+        int currentQuantity = item.getQuantity();
+        int diff = newQuantity - currentQuantity;
+
+        if (diff > 0) {
+            if (product.getQuantity() < diff) {
+                throw new RuntimeException("Estoque insuficiente");
+            }
+            product.setQuantity(product.getQuantity() - diff);
+        } else {
+            product.setQuantity(product.getQuantity() + Math.abs(diff));
+        }
+
+        item.setQuantity(newQuantity);
+
+        productRepository.save(product);
+        cartRepository.save(cart);
+
+        return convertToCartDTO(cart);
+    }
+
+    private String getFirstImageUrl(Product product) {
+        if (product.getImages() != null && !product.getImages().isEmpty()) {
+            Long productId = product.getId();
+            Long imageId = product.getImages().get(0).getId();
+            return "/products/" + productId + "/images/" + imageId;
+        }
+        return "/images/default.jpg";
+    }
+
     private CartDTO convertToCartDTO(Cart cart) {
         CartDTO cartDTO = new CartDTO();
         cartDTO.setId(cart.getId());
@@ -181,6 +220,9 @@ public class CartService {
 
             // Calculando preço total baseado na quantidade
             itemDTO.setTotalPrice(item.getProduct().getPrice() * item.getQuantity());
+
+            itemDTO.setAvailableStock(item.getProduct().getQuantity());
+            itemDTO.setImageUrl(getFirstImageUrl(item.getProduct()));
 
             return itemDTO;
         }).collect(Collectors.toList());
